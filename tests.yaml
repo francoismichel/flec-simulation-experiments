@@ -1,0 +1,62 @@
+binaries:
+  simple-p2p: 'simple-p2p/bin/simple-p2p'
+  blackhole: 'blackhole/bin/blackhole'
+  droplist: 'droplist/bin/droplist'
+  tcp-cross-traffic: 'tcp-cross-traffic/bin/tcp-cross-traffic'
+  udp-cross-traffic: 'udp-cross-traffic/bin/udp-cross-traffic'
+
+definitions:
+  simple-p2p:
+    params:
+      delay:
+        range: [1, 300]
+        type: float
+        units: ms
+      bandwidth:
+        range: [2, 100]
+        type: float
+        units: Mbps
+      filesize:
+        range: [1000, 100_000_000]
+        type: int
+    variants:
+      plugins:
+        - ~
+        - datagram/datagram.plugin
+        - monitoring/monitoring.plugin
+        - qlog/qlog.plugin
+        - multipath/multipath_rr.plugin
+        - multipath/multipath_rtt.plugin
+    sim_timeout: 180
+    hard_timeout: 900
+  droplist:
+    params:
+      delay:
+        range: [100, 100]
+        type: float
+        units: ms
+      bandwidth:
+        range: [2, 2]
+        type: float
+        units: Mbps
+      filesize:
+        range: [100_000, 100_000]
+        type: int
+      drops_to_client:
+        range: [1, 40]
+        type: int
+        count: 5
+      drops_to_server:
+        range: [1, 40]
+        type: int
+        count: 5
+    variants:
+      plugins:
+        - ~
+        - datagram/datagram.plugin
+        - monitoring/monitoring.plugin
+        - qlog/qlog.plugin
+        - multipath/multipath_rr.plugin
+        - multipath/multipath_rtt.plugin
+    sim_timeout: 120
+    hard_timeout: 180

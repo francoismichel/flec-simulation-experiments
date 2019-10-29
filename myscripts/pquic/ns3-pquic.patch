@@ -1,0 +1,137 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cfd6451..541f079 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -6,21 +6,21 @@ SET(CMAKE_C_STANDARD 11)
+ 
+ # FIND_PACKAGE(PkgConfig REQUIRED)
+ 
+-SET(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2 -g ${CC_WARNING_FLAGS} ${CMAKE_C_FLAGS}")
++SET(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2 -g ${CC_WARNING_FLAGS} ${CMAKE_C_FLAGS} -fPIC")
+ 
+-SET(GCC_COVERAGE_LINK_FLAGS    "-Wl,--no-as-needed,-lprofiler,--as-needed")
+-SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
++
++SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS} -pie -rdynamic")
+ 
+ if($ENV{DISABLE_DEBUG_PRINTF})
+-    SET(CMAKE_C_FLAGS "-DDISABLE_DEBUG_PRINTF ${CMAKE_C_FLAGS}")
++    SET(CMAKE_C_FLAGS "-DDISABLE_DEBUG_PRINTF ${CMAKE_C_FLAGS} -fPIC")
+ endif()
+ 
+ if($ENV{DISABLE_QLOG})
+-    SET(CMAKE_C_FLAGS "-DDISABLE_QLOG ${CMAKE_C_FLAGS}")
++    SET(CMAKE_C_FLAGS "-DDISABLE_QLOG ${CMAKE_C_FLAGS} -fPIC")
+ endif()
+ 
+ if($ENV{STATIC_RESPONSE})
+-    SET(CMAKE_C_FLAGS "-DSTATIC_RESPONSE=$ENV{STATIC_RESPONSE} ${CMAKE_C_FLAGS}")
++    SET(CMAKE_C_FLAGS "-DSTATIC_RESPONSE=$ENV{STATIC_RESPONSE} ${CMAKE_C_FLAGS} -fPIC")
+ endif()
+ 
+ INCLUDE_DIRECTORIES(picoquic picoquictest ../picotls/include
+diff --git a/picoquic/picosocks.c b/picoquic/picosocks.c
+index 29e2833..fa3729d 100644
+--- a/picoquic/picosocks.c
++++ b/picoquic/picosocks.c
+@@ -53,7 +53,7 @@ static int bind_to_port(SOCKET_TYPE fd, int af, int port)
+ int picoquic_open_server_sockets(picoquic_server_sockets_t* sockets, int port)
+ {
+     int ret = 0;
+-    const int sock_af[] = { AF_INET6, AF_INET };
++    const int sock_af[] = { AF_INET };
+ 
+     for (int i = 0; i < PICOQUIC_NB_SERVER_SOCKETS; i++) {
+         if (ret == 0) {
+@@ -85,7 +85,7 @@ int picoquic_open_server_sockets(picoquic_server_sockets_t* sockets, int port)
+                 }
+                 if (ret == 0) {
+                     val = 1;
+-                    ret = setsockopt(sockets->s_socket[i], IPPROTO_IPV6, IPV6_DONTFRAG, &val, sizeof(val));
++                    ret = setsockopt(sockets->s_socket[i], IPPROTO_IPV6, 62, &val, sizeof(val));
+                 }
+             }
+             else {
+@@ -641,7 +641,7 @@ int picoquic_send_through_server_sockets(
+     const char* bytes, int length)
+ {
+     /* Both Linux and Windows use separate sockets for V4 and V6 */
+-    int socket_index = (addr_dest->sa_family == AF_INET) ? 1 : 0;
++    int socket_index = 0;
+ 
+     int sent = picoquic_sendmsg(sockets->s_socket[socket_index], addr_dest, dest_length,
+         addr_from, from_length, from_if, bytes, length);
+@@ -651,6 +651,7 @@ int picoquic_send_through_server_sockets(
+ #ifdef _WINDOWS
+         int last_error = WSAGetLastError();
+ #else
++        perror("send through server sockets");
+         int last_error = errno;
+ #endif
+         DBG_PRINTF("Could not send packet on UDP socket[%d]= %d!\n",
+diff --git a/picoquic/picosocks.h b/picoquic/picosocks.h
+index 74cc6ad..81fd01a 100644
+--- a/picoquic/picosocks.h
++++ b/picoquic/picosocks.h
+@@ -105,7 +105,7 @@
+ 
+ #include "picoquic_internal.h"
+ 
+-#define PICOQUIC_NB_SERVER_SOCKETS 2
++#define PICOQUIC_NB_SERVER_SOCKETS 1
+ 
+ typedef struct st_picoquic_server_sockets_t {
+     SOCKET_TYPE s_socket[PICOQUIC_NB_SERVER_SOCKETS];
+diff --git a/picoquicfirst/picoquicdemo.c b/picoquicfirst/picoquicdemo.c
+index 4c75958..2bb792b 100644
+--- a/picoquicfirst/picoquicdemo.c
++++ b/picoquicfirst/picoquicdemo.c
+@@ -582,7 +582,7 @@ int quic_server(const char* server_name, int server_port,
+ 
+                             /* QDC: I hate having those lines here... But it is the only place to hook before sending... */
+                             /* Both Linux and Windows use separate sockets for V4 and V6 */
+-                            int socket_index = (peer_addr->sa_family == AF_INET) ? 1 : 0;
++                            int socket_index = 0;
+                             picoquic_before_sending_packet(cnx_next, server_sockets.s_socket[socket_index]);
+ 
+                             (void)picoquic_send_through_server_sockets(&server_sockets,
+@@ -903,14 +903,14 @@ int quic_client(const char* ip_address_text, int server_port, const char * sni,
+ 
+     if (ret == 0) {
+         /* Make the most possible flexible socket */
+-        fd = socket(/*server_address.ss_family*/AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
++        fd = socket(/*server_address.ss_family*/AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+         if (fd == INVALID_SOCKET) {
+             ret = -1;
+         } else {
+             int val = 1;
+-            ret = setsockopt(fd, IPPROTO_IPV6, IPV6_DONTFRAG, &val, sizeof(val));
++            ret = setsockopt(fd, IPPROTO_IPV6, 62, &val, sizeof(val));
+             if (ret != 0) {
+-                perror("setsockopt IPV6_DONTFRAG");
++                perror("setsockopt 62");
+             }
+         }
+     }
+diff --git a/picoquicfirst/picoquicvpn.c b/picoquicfirst/picoquicvpn.c
+index 2f5618a..b408216 100644
+--- a/picoquicfirst/picoquicvpn.c
++++ b/picoquicfirst/picoquicvpn.c
+@@ -757,9 +757,9 @@ int quic_client(const char* ip_address_text, int server_port, const char * sni,
+             ret = -1;
+         } else {
+             int val = 1;
+-            ret = setsockopt(fd, IPPROTO_IPV6, IPV6_DONTFRAG, &val, sizeof(val));
++            ret = setsockopt(fd, IPPROTO_IPV6, 62, &val, sizeof(val));
+             if (ret != 0) {
+-                perror("setsockopt IPV6_DONTFRAG");
++                perror("setsockopt 62");
+             }
+         }
+     }
+diff --git a/ubpf b/ubpf
+--- a/ubpf
++++ b/ubpf
+@@ -1 +1 @@
+-Subproject commit 0a3d8ec1b2ff19fa54a5abf88db5ae51dc6984cd
++Subproject commit 0a3d8ec1b2ff19fa54a5abf88db5ae51dc6984cd-dirty

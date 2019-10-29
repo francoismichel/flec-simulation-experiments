@@ -1,0 +1,7 @@
+__pycache__
+jail/*
+!jail/cgi-bin
+*.json
+*.pcap
+.test_suite.lock
+.idea

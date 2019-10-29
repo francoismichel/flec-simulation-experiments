@@ -1,0 +1,161 @@
+diff --git a/model/dce-poll.cc b/model/dce-poll.cc
+index 0cac665..b87598b 100644
+--- a/model/dce-poll.cc
++++ b/model/dce-poll.cc
+@@ -15,6 +15,17 @@ NS_LOG_COMPONENT_DEFINE ("DcePollSelect");
+ 
+ using namespace ns3;
+ 
++long int dce___fdelt_chk(long int d)
++{
++	if (d < 0 || d >= FD_SETSIZE) {
++		fprintf(stderr, "fdelt_chk: buffer overflow detected\n");
++		fflush(stderr);
++		exit(-1);
++	}
++
++	return d / __NFDBITS;
++}
++
+ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
+ {
+   int count = -1;
+diff --git a/model/dce-stdio.cc b/model/dce-stdio.cc
+index 076dffc..1caa9a6 100644
+--- a/model/dce-stdio.cc
++++ b/model/dce-stdio.cc
+@@ -210,6 +210,34 @@ FILE * dce_fdopen (int fildes, const char *mode)
+   return file;
+ }
+ 
++FILE * dce_fmemopen (void *buf, size_t size, const char *mode)
++{
++  NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << buf << size << mode);
++  NS_ASSERT (Current () != 0);
++  Thread *current = Current ();
++
++  FILE *file = fmemopen (buf, size, mode);
++  if (file == 0)
++    {
++      current->err = errno;
++      return 0;
++    }
++  struct my_IO_FILE_plus *fp = (struct my_IO_FILE_plus *)file;
++  static struct my_IO_jump_t vtable;
++  memcpy (&vtable, fp->vtable, sizeof(struct my_IO_jump_t));
++  vtable.__read = (void*)my_read;
++  vtable.__write = (void*)my_write;
++  vtable.__seek = (void*)my_seek;
++  vtable.__close = (void*)my_close;
++  vtable.__stat = (void*)my_stat;
++  fp->vtable = &vtable;
++  //close (file->_fileno);
++  //file->_fileno = fildes;
++  current->process->openStreams.push_back (file);
++
++  return file;
++}
++
+ FILE * dce_fopen64 (const char *path, const char *mode)
+ {
+   NS_LOG_FUNCTION (Current () << UtilsGetNodeId () << path << mode);
+diff --git a/model/dce-stdio.h b/model/dce-stdio.h
+index 458442b..e80f3db 100644
+--- a/model/dce-stdio.h
++++ b/model/dce-stdio.h
+@@ -13,6 +13,7 @@ FILE * dce_fopen (const char *path, const char *mode);
+ FILE * dce_fopen64 (const char *path, const char *mode);
+ FILE * dce_fdopen (int fildes, const char *mode);
+ FILE * dce_freopen (const char *path, const char *mode, FILE *stream);
++FILE * dce_fmemopen (void *buf, size_t size, const char *mode);
+ int dce_fclose (FILE *fp);
+ int dce_fclose_unconditional (FILE *fp);
+ int dce_fclose_onexec (FILE *file);
+diff --git a/model/libc-dce.cc b/model/libc-dce.cc
+index f130ec5..492e46e 100644
+--- a/model/libc-dce.cc
++++ b/model/libc-dce.cc
+@@ -120,7 +120,7 @@ extern int (*__gxx_personality_v0)(int a, int b,
+ // extern int __gxx_personality_v0 (int a, int b,
+ //                                                               unsigned c, struct _Unwind_Exception *d, struct _Unwind_Context *e);
+ // extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
+-extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
++// extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
+ 
+ // from glibc's string.h
+ extern char * __strcpy_chk (char *__restrict __dest,
+diff --git a/model/libc-ns3.h b/model/libc-ns3.h
+index 3294921..dc97ce5 100644
+--- a/model/libc-ns3.h
++++ b/model/libc-ns3.h
+@@ -49,9 +49,9 @@
+ // // not really a libc function, but we still need to get pointer from DCE to this function
+ NATIVE (dce_global_variables_setup)
+ 
+-// Not sure where it is defined and implemented
+-// NATIVE (__xpg_strerror_r)
+-
++// Let's go crazy
++NATIVE (syscall)
++DCE (__fdelt_chk)
+ 
+ DCE    (__cxa_finalize)
+ DCE    (__cxa_atexit)
+@@ -124,7 +124,7 @@ NATIVE (bzero)
+ NATIVE_WITH_ALIAS2 (explicit_bzero, __explicit_bzero_chk)
+ #endif	/* HAVE___EXPLICIT_BZERO */
+ NATIVE (strerror)
+-NATIVE (strerror_r)
++NATIVE_WITH_ALIAS2 (strerror_r, __xpg_strerror_r)
+ NATIVE (strcoll)
+ NATIVE (memset)
+ NATIVE (memcpy)
+@@ -135,7 +135,7 @@ NATIVE (memmove)
+ NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
+ NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
+ NATIVE (strcpy)
+-NATIVE (strncpy)
++NATIVE_WITH_ALIAS2 (strncpy, __strncpy_chk)
+ NATIVE (__stpncpy)
+ NATIVE (strcat)
+ NATIVE (strncat)
+@@ -159,7 +159,6 @@ NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
+ NATIVE (strsep)
+ NATIVE (strsignal)
+ 
+-
+ // LOCALE.H
+ DCE    (setlocale)
+ NATIVE_WITH_ALIAS (newlocale)
+@@ -370,6 +369,7 @@ NATIVE (flockfile)
+ NATIVE (funlockfile)
+ NATIVE (getline)
+ NATIVE (__fsetlocking)
++DCE (fmemopen)
+ 
+ // STDARG.H
+ DCE (vprintf)
+diff --git a/model/libc.h b/model/libc.h
+index 264a5c4..f192bb7 100644
+--- a/model/libc.h
++++ b/model/libc.h
+@@ -4,6 +4,7 @@
+ #include <stdarg.h>
+ #define _SYS_SELECT_H
+ #include <sys/types.h>
++#include <bits/select2.h>
+ #undef _SYS_SELECT_H
+ 
+ struct Libc
+diff --git a/model/sys/dce-select.h b/model/sys/dce-select.h
+index d695242..07b8538 100644
+--- a/model/sys/dce-select.h
++++ b/model/sys/dce-select.h
+@@ -10,6 +10,7 @@ extern "C" {
+ int dce_select (int nfds, fd_set *readfds, fd_set *writefds,
+                 fd_set *exceptfds, struct timeval *timeout);
+ 
++long int dce___fdelt_chk (long int __d);
+ #ifdef __cplusplus
+ }
+ #endif

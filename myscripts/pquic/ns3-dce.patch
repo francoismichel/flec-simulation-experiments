@@ -1,0 +1,96 @@
+diff --git a/model/dce-poll.cc b/model/dce-poll.cc
+index 0cac665..355a58c 100644
+--- a/model/dce-poll.cc
++++ b/model/dce-poll.cc
+@@ -15,6 +15,11 @@ NS_LOG_COMPONENT_DEFINE ("DcePollSelect");
+ 
+ using namespace ns3;
+ 
++long int dce___fdelt_chk(long int __d)
++{
++	return __d;  // TODO Find the code for this
++}
++
+ int dce_poll (struct pollfd *fds, nfds_t nfds, int timeout)
+ {
+   int count = -1;
+diff --git a/model/libc-dce.cc b/model/libc-dce.cc
+index f130ec5..492e46e 100644
+--- a/model/libc-dce.cc
++++ b/model/libc-dce.cc
+@@ -120,7 +120,7 @@ extern int (*__gxx_personality_v0)(int a, int b,
+ // extern int __gxx_personality_v0 (int a, int b,
+ //                                                               unsigned c, struct _Unwind_Exception *d, struct _Unwind_Context *e);
+ // extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
+-extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
++// extern int __xpg_strerror_r (int __errnum, char *__buf, size_t __buflen);
+ 
+ // from glibc's string.h
+ extern char * __strcpy_chk (char *__restrict __dest,
+diff --git a/model/libc-ns3.h b/model/libc-ns3.h
+index 3294921..3d32422 100644
+--- a/model/libc-ns3.h
++++ b/model/libc-ns3.h
+@@ -49,9 +49,9 @@
+ // // not really a libc function, but we still need to get pointer from DCE to this function
+ NATIVE (dce_global_variables_setup)
+ 
+-// Not sure where it is defined and implemented
+-// NATIVE (__xpg_strerror_r)
+-
++// Let's go crazy
++NATIVE (syscall)
++DCE (__fdelt_chk)
+ 
+ DCE    (__cxa_finalize)
+ DCE    (__cxa_atexit)
+@@ -124,7 +124,7 @@ NATIVE (bzero)
+ NATIVE_WITH_ALIAS2 (explicit_bzero, __explicit_bzero_chk)
+ #endif	/* HAVE___EXPLICIT_BZERO */
+ NATIVE (strerror)
+-NATIVE (strerror_r)
++NATIVE_WITH_ALIAS2 (strerror_r, __xpg_strerror_r)
+ NATIVE (strcoll)
+ NATIVE (memset)
+ NATIVE (memcpy)
+@@ -135,7 +135,7 @@ NATIVE (memmove)
+ NATIVE_EXPLICIT (memchr, void * (*)(void *, int, size_t))
+ NATIVE_EXPLICIT (memrchr, void * (*)(void *, int, size_t))
+ NATIVE (strcpy)
+-NATIVE (strncpy)
++NATIVE_WITH_ALIAS2 (strncpy, __strncpy_chk)
+ NATIVE (__stpncpy)
+ NATIVE (strcat)
+ NATIVE (strncat)
+@@ -159,7 +159,6 @@ NATIVE_EXPLICIT (strtok_r,  char * (*)(char *, const char *, char **))
+ NATIVE (strsep)
+ NATIVE (strsignal)
+ 
+-
+ // LOCALE.H
+ DCE    (setlocale)
+ NATIVE_WITH_ALIAS (newlocale)
+diff --git a/model/libc.h b/model/libc.h
+index 264a5c4..f192bb7 100644
+--- a/model/libc.h
++++ b/model/libc.h
+@@ -4,6 +4,7 @@
+ #include <stdarg.h>
+ #define _SYS_SELECT_H
+ #include <sys/types.h>
++#include <bits/select2.h>
+ #undef _SYS_SELECT_H
+ 
+ struct Libc
+diff --git a/model/sys/dce-select.h b/model/sys/dce-select.h
+index d695242..07b8538 100644
+--- a/model/sys/dce-select.h
++++ b/model/sys/dce-select.h
+@@ -10,6 +10,7 @@ extern "C" {
+ int dce_select (int nfds, fd_set *readfds, fd_set *writefds,
+                 fd_set *exceptfds, struct timeval *timeout);
+ 
++long int dce___fdelt_chk (long int __d);
+ #ifdef __cplusplus
+ }
+ #endif
