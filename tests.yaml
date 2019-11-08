@@ -28,7 +28,7 @@ definitions:
         - multipath/multipath_rr.plugin
         - multipath/multipath_rtt.plugin
     sim_timeout: 180
-    hard_timeout: 900
+    hard_timeout: 480
   droplist:
     params:
       delay:
@@ -59,4 +59,4 @@ definitions:
         - multipath/multipath_rr.plugin
         - multipath/multipath_rtt.plugin
     sim_timeout: 120
-    hard_timeout: 180
+    hard_timeout: 60
