@@ -140,6 +140,7 @@ def run_binary(tests, binary, params, values, sim_timeout, hard_timeout, env=Non
         if client_stdout is not None and 'Client exit with code = 0\n' not in client_stdout:
             failures.append('Client exit code was not 0')
 
+        transfer_time = None
         if failures:
             print(repr(client_status), repr(client_stdout))
             print('-' * 20)
@@ -152,7 +153,7 @@ def run_binary(tests, binary, params, values, sim_timeout, hard_timeout, env=Non
             transfer_time = client_stdout.splitlines()[-2]
             print('Test finished:', binary, ' '.join(args), env, 'in (simulated)', transfer_time, '(real-time) %.2fs' % (end - start))
 
-        return start, end, values, failures
+        return {'start': start, 'end': end, 'values': values, 'cmdline': '%s %s' % (binary, ' '.join(args)), 'failures': failures, 'transfer_time': transfer_time}
 
 
 results = {}
