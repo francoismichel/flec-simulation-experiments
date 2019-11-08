@@ -1,5 +1,6 @@
 binaries:
   simple-p2p: 'simple-p2p/bin/simple-p2p'
+  multipath-p2p: 'multipath-p2p/bin/multipath-p2p'
   blackhole: 'blackhole/bin/blackhole'
   droplist: 'droplist/bin/droplist'
   tcp-cross-traffic: 'tcp-cross-traffic/bin/tcp-cross-traffic'
@@ -22,11 +23,11 @@ definitions:
     variants:
       plugins:
         - ~
-        - datagram/datagram.plugin
-        - monitoring/monitoring.plugin
-        - qlog/qlog.plugin
-        - multipath/multipath_rr.plugin
-        - multipath/multipath_rtt.plugin
+        - plugins/datagram/datagram.plugin
+        - plugins/monitoring/monitoring.plugin
+        - plugins/qlog/qlog.plugin
+        - plugins/multipath/multipath_rr.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+        - plugins/multipath/multipath_rtt.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
     sim_timeout: 180
     hard_timeout: 480
   droplist:
@@ -53,10 +54,32 @@ definitions:
     variants:
       plugins:
         - ~
-        - datagram/datagram.plugin
-        - monitoring/monitoring.plugin
-        - qlog/qlog.plugin
-        - multipath/multipath_rr.plugin
-        - multipath/multipath_rtt.plugin
+        - plugins/datagram/datagram.plugin
+        - plugins/monitoring/monitoring.plugin
+        - plugins/qlog/qlog.plugin
+        - plugins/multipath/multipath_rr.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+        - plugins/multipath/multipath_rtt.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
     sim_timeout: 120
     hard_timeout: 60
+  multipath-p2p:
+    params:
+      delay:
+        range: [1, 300]
+        type: float
+        units: ms
+      bandwidth:
+        range: [2, 100]
+        type: float
+        units: Mbps
+      filesize:
+        range: [1000, 100_000_000]
+        type: int
+      paths:
+        range: [2, 2]
+        type: int
+    variants:
+      plugins:
+        - plugins/multipath/multipath_rr.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+        - plugins/multipath/multipath_rtt.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+    sim_timeout: 180
+    hard_timeout: 480

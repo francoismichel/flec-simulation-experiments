@@ -180,7 +180,7 @@ for b, opts in tests['definitions'].items():
     results[b] = {'plugins': {}}
 
     for p in opts['variants']['plugins']:
-        plugin_path = '' if not p else os.path.join('plugins', p)
+        plugin_path = p or ''
 
         with multiprocessing.Pool(processes=os.environ.get('NPROC')) as pool:
             results[b]['plugins'][p] = pool.starmap(run_binary, [(tests, b, params, v, opts['sim_timeout'], opts['hard_timeout'], {'PQUIC_PLUGINS': plugin_path}) for v in ParamsGenerator(params, wsp_matrix).generate_all_values()])

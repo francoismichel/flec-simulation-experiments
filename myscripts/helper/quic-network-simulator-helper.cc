@@ -44,6 +44,8 @@ QuicNetworkSimulatorHelper::QuicNetworkSimulatorHelper(std::string filesize) {
   NodeContainer nodes;
   nodes.Create(2);
   InternetStackHelper internet;
+  Ipv4DceRoutingHelper routing = Ipv4DceRoutingHelper();
+  internet.SetRoutingHelper(routing);
   internet.Install(nodes);
 
   left_node_ = nodes.Get(0);
