@@ -142,11 +142,11 @@ def run_binary(tests, binary, params, values, sim_timeout, hard_timeout, env=Non
 
         transfer_time = None
         if failures:
-            print(repr(client_status), repr(client_stdout))
+            print(repr(client_status), repr(client_stdout[:10000]))
             print('-' * 20)
-            print(repr(server_status), repr(server_stdout))
+            print(repr(server_status), repr(server_stdout[:10000]))
             print('-' * 20)
-            print(repr(client_stderr), repr(client_stderr))
+            print(repr(client_stderr[:10000]), repr(client_stderr[:10000]))
             print(failures)
             print('Test crashed:', binary, ' '.join(args), env, 'after (real-time) %.2fs' % (end - start))
         else:
