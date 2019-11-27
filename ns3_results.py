@@ -2,6 +2,7 @@
 import argparse
 import datetime
 import json
+import os
 import sys
 
 import yaml
@@ -23,10 +24,15 @@ def printi(v, *args, **kwargs):
     print('%s%s' % (indent, v), *args, **kwargs)
 
 
+def gdb(plugins, binary_path, args):
+    return "/pquic-ns3-dce/prepare_pquic.sh && cd $NS3_PATH && NS_LOG= PQUIC_DEBUG=1 PQUIC_PLUGINS=%s gdb -ex 'handle SIGUSR1 nostop noprint' --args build/myscripts/%s/%s" % (','.join(plugins), os.path.dirname(binary_path), args)
+
+
 parser = argparse.ArgumentParser(description='Extracts and presents results from a result file')
 parser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin)
 parser.add_argument('-t', '--test', help='extracts results for the test TEST')
 parser.add_argument('--cmd', action='store_true', default=False, help="don't output details, only the result command lines")
+parser.add_argument('--gdb', action='store_true', default=False, help="don't output details, only the result GDB command lines")
 parser.add_argument('--status', type=str, choices=('failed', 'passed', 'timedout'), default='failed', help='extracts results for tests in this status')
 parser.add_argument('--stats', action='store_true', default=False, help='outputs the percentage of tests passed')
 parser.add_argument('--retcode', action='store_true', default=False, help='sets the return code to 0 if all tests selected pass, otherwise -1')
@@ -34,6 +40,9 @@ parser.add_argument('--total-time', action='store_true', default=False, help='ou
 args = parser.parse_args()
 
 results = json.load(args.file)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(script_dir, 'tests.yaml')) as f:
+    tests = yaml.load(f, Loader=yaml.SafeLoader)
 
 tests_run = 0
 valid_tests_run = 0
@@ -67,9 +76,12 @@ for test, variants in results.items():
                 if args.stats or (args.status and status != args.status):
                     continue
 
-                printi(r['cmdline'])
+                if args.cmd or not args.gdb:
+                    printi("%s/%s" % (os.path.dirname(tests['binaries'][test]), r['cmdline']))
+                if args.gdb:
+                    printi(gdb(tests['plugins'][variant]['plugins'], tests['binaries'][test], r['cmdline']))
 
-                if args.cmd:
+                if args.cmd or args.gdb:
                     continue
 
                 pp()
