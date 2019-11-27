@@ -158,7 +158,7 @@ def run_binary(tests, binary, params, values, sim_timeout, hard_timeout, env=Non
 
 results = {}
 
-wsp_matrix = load_wsp(os.path.join(script_dir, 'wsp_something'), 13, 93)
+wsp_matrix = load_wsp(os.path.join(script_dir, 'wsp_20_col'), 20, 95)
 with open(os.path.join(script_dir, 'tests.yaml')) as f:
     tests = yaml.load(f)
 
