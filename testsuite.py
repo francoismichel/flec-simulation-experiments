@@ -191,7 +191,8 @@ for b, opts in tests['definitions'].items():
                 r.extend(pool.starmap(run_binary, [(tests, b, params, v, opts['sim_timeout'], opts['hard_timeout'], {'PQUIC_PLUGINS': plugin_paths}) for v in ParamsGenerator(params, wsp_matrix).generate_all_values()]))
                 results[b]['plugins'][p_id] = r
 
-            del params['filesize']
+            if f:
+                del params['filesize']
 
 with open(os.path.join(test_args.results), 'w') as f:
     json.dump(results, f)
