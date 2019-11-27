@@ -4,31 +4,11 @@
 #include "ns3/point-to-point-module.h"
 #include "../helper/quic-network-simulator-helper.h"
 #include "../helper/quic-point-to-point-helper.h"
-#include "blackhole-error-model.h"
+#include "../helper/blackhole-error-model.h"
 
 using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("ns3 simulator");
-
-void enable(Ptr<BlackholeErrorModel> em, const Time next, const int repeat) {
-  static int counter = 0;
-  counter++;
-  std::cout << Simulator::Now().GetSeconds() << "s: Enabling blackhole" << std::endl;
-  em->Enable();
-  if(counter < repeat) {
-    Simulator::Schedule(next, &enable, em, next, repeat);
-  }
-}
-
-void disable(Ptr<BlackholeErrorModel> em, const Time next, const int repeat) {
-  static int counter = 0;
-  std::cout << Simulator::Now().GetSeconds() << "s: Disabling blackhole" << std::endl;
-  counter++;
-  em->Disable();
-  if(counter < repeat) {
-    Simulator::Schedule(next, &disable, em, next, repeat);
-  }
-}
 
 int main(int argc, char *argv[]) {
   std::string delay, bandwidth, queue, on, off, repeat_s, drop_direction_s, filesize;
@@ -89,8 +69,8 @@ int main(int argc, char *argv[]) {
   }
 
   Time intv = Time(on) + Time(off);
-  Simulator::Schedule(Time(on), &enable, em, intv, repeat);
-  Simulator::Schedule(intv, &disable, em, intv, repeat);
+  Simulator::Schedule(Time(on), &Enable, em, intv, repeat);
+  Simulator::Schedule(intv, &Disable, em, intv, repeat);
 
   sim.Run(Seconds(180));
 }

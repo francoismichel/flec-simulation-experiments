@@ -2,6 +2,8 @@ binaries:
   simple-p2p: 'simple-p2p/bin/simple-p2p'
   multipath-p2p: 'multipath-p2p/bin/multipath-p2p'
   multipath-p2p-asym: 'multipath-p2p-asym/bin/multipath-p2p-asym'
+  multipath-p2p-asym-droplist: 'multipath-p2p-asym/bin/multipath-p2p-asym'
+  multipath-p2p-faulty: 'multipath-p2p-faulty/bin/multipath-p2p-faulty'
   sigcomm19: 'multipath-p2p/bin/multipath-p2p'
   blackhole: 'blackhole/bin/blackhole'
   droplist: 'droplist/bin/droplist'
@@ -129,6 +131,34 @@ definitions:
       bandwidth_balance:
         range: [0.1, 0.5]
         type: float
+    variants:
+      plugins:
+        - no_plugins
+        - multipath-rr
+        - multipath-rtt
+      filesize:
+        - 50_000
+        - 1_000_000
+        - 10_000_000
+        - 25_000_000
+    sim_timeout: 120
+    hard_timeout: 480
+  multipath-p2p-asym-droplist:
+    params:
+      delay:
+        range: [100, 100]
+        type: float
+        units: ms
+      bandwidth:
+        range: [50, 50]
+        type: float
+        units: Mbps
+      delay_balance:
+        range: [0.1, 0.9]
+        type: float
+      bandwidth_balance:
+        range: [0.1, 0.5]
+        type: float
       drops_to_client0:
         range: [1, 40]
         type: int
@@ -152,11 +182,44 @@ definitions:
         - multipath-rtt
       filesize:
         - 50_000
-        - 1_000_000
-        - 10_000_000
-        - 25_000_000
-    sim_timeout: 120
-    hard_timeout: 480
+    sim_timeout: 60
+    hard_timeout: 120
+  multipath-p2p-faulty:
+    params:
+      delay:
+        range: [100, 100]
+        type: float
+        units: ms
+      bandwidth:
+        range: [50, 50]
+        type: float
+        units: Mbps
+      delay_balance:
+        range: [0.1, 0.9]
+        type: float
+      bandwidth_balance:
+        range: [0.1, 0.5]
+        type: float
+      'on':
+        range: [1, 4]
+        type: float
+        units: s
+      'off':
+        range: [0.5, 2]
+        type: float
+        units: s
+      repeat:
+        range: [2, 10]
+        type: int
+    variants:
+      plugins:
+        - no_plugins
+        - multipath-rr
+        - multipath-rtt
+      filesize:
+        - 50_000
+    sim_timeout: 60
+    hard_timeout: 120
   sigcomm19:
     params:
       delay:
