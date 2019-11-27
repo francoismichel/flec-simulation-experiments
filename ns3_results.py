@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import datetime
 import json
 import sys
 
@@ -29,12 +30,15 @@ parser.add_argument('--cmd', action='store_true', default=False, help="don't out
 parser.add_argument('--status', type=str, choices=('failed', 'passed', 'timedout'), default='failed', help='extracts results for tests in this status')
 parser.add_argument('--stats', action='store_true', default=False, help='outputs the percentage of tests passed')
 parser.add_argument('--retcode', action='store_true', default=False, help='sets the return code to 0 if all tests selected pass, otherwise -1')
+parser.add_argument('--total-time', action='store_true', default=False, help='outputs the amount of time the results span')
 args = parser.parse_args()
 
 results = json.load(args.file)
 
 tests_run = 0
 valid_tests_run = 0
+earliest = float('+inf')
+latest = float('-inf')
 
 for test, variants in results.items():
     if args.test and test != args.test:
@@ -50,6 +54,8 @@ for test, variants in results.items():
             pp()
             for r in variant_results:
                 tests_run += 1
+                earliest = min(r['start'], earliest)
+                latest = max(r['end'], latest)
                 status = 'passed'
                 if 'Timeout reached' in r['failures']:
                     status = 'timedout'
@@ -83,6 +89,9 @@ for test, variants in results.items():
 
 if args.stats and tests_run:
     print('%d/%d (%.2f%%) tests passed' % (valid_tests_run, tests_run, (valid_tests_run / tests_run) * 100))
+
+if args.total_time:
+    print('Tests started at %s and stopped at %s, running for %s' % (datetime.datetime.fromtimestamp(earliest).strftime('%c'), datetime.datetime.fromtimestamp(latest).strftime('%c'), str(datetime.timedelta(seconds=latest - earliest))))
 
 if args.retcode and valid_tests_run < tests_run:
     exit(-1)
