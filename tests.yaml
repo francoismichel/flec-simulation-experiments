@@ -1,10 +1,39 @@
 binaries:
   simple-p2p: 'simple-p2p/bin/simple-p2p'
   multipath-p2p: 'multipath-p2p/bin/multipath-p2p'
+  multipath-p2p-asym: 'multipath-p2p-asym/bin/multipath-p2p-asym'
+  sigcomm19: 'multipath-p2p/bin/multipath-p2p'
   blackhole: 'blackhole/bin/blackhole'
   droplist: 'droplist/bin/droplist'
   tcp-cross-traffic: 'tcp-cross-traffic/bin/tcp-cross-traffic'
   udp-cross-traffic: 'udp-cross-traffic/bin/udp-cross-traffic'
+
+plugins:
+  no_plugins:
+    name: PQUIC Core
+    plugins: []
+  monitoring:
+    name: Monitoring
+    plugins:
+      - plugins/monitoring/monitoring.plugin
+  datagram:
+    name: DATAGRAM
+    plugins:
+      - plugins/datagram/datagram.plugin
+  qlog:
+    name: QLog
+    plugins:
+      - plugins/qlog/qlog.plugin
+  multipath-rr:
+    name: Multipath RR
+    plugins:
+      - plugins/multipath/multipath_rr.plugin
+      - plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+  multipath-rtt:
+    name: Multipath RTT
+    plugins:
+      - plugins/multipath/multipath_rtt.plugin
+      - plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
 
 definitions:
   simple-p2p:
@@ -22,12 +51,12 @@ definitions:
         type: int
     variants:
       plugins:
-        - ~
-        - plugins/datagram/datagram.plugin
-        - plugins/monitoring/monitoring.plugin
-        - plugins/qlog/qlog.plugin
-        - plugins/multipath/multipath_rr.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
-        - plugins/multipath/multipath_rtt.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+        - no_plugins
+        - monitoring
+        - datagram
+        - qlog
+        - multipath-rr
+        - multipath-rtt
     sim_timeout: 180
     hard_timeout: 480
   droplist:
@@ -53,12 +82,12 @@ definitions:
         count: 5
     variants:
       plugins:
-        - ~
-        - plugins/datagram/datagram.plugin
-        - plugins/monitoring/monitoring.plugin
-        - plugins/qlog/qlog.plugin
-        - plugins/multipath/multipath_rr.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
-        - plugins/multipath/multipath_rtt.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+        - no_plugins
+        - monitoring
+        - datagram
+        - qlog
+        - multipath-rr
+        - multipath-rtt
     sim_timeout: 120
     hard_timeout: 60
   multipath-p2p:
@@ -72,14 +101,85 @@ definitions:
         type: float
         units: Mbps
       filesize:
-        range: [1000, 100_000_000]
+        range: [1000, 25_000_000]
         type: int
       paths:
         range: [2, 2]
         type: int
     variants:
       plugins:
-        - plugins/multipath/multipath_rr.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
-        - plugins/multipath/multipath_rtt.plugin,plugins/multipath/addresses_filters/filter_ns3_ipv4.plugin
+        - no_plugins
+        - multipath-rr
+        - multipath-rtt
     sim_timeout: 180
+    hard_timeout: 480
+  multipath-p2p-asym:
+    params:
+      delay:
+        range: [100, 100]
+        type: float
+        units: ms
+      bandwidth:
+        range: [50, 50]
+        type: float
+        units: Mbps
+      delay_balance:
+        range: [0.1, 0.9]
+        type: float
+      bandwidth_balance:
+        range: [0.1, 0.5]
+        type: float
+      drops_to_client0:
+        range: [1, 40]
+        type: int
+        count: 3
+      drops_to_client1:
+        range: [1, 40]
+        type: int
+        count: 3
+      drops_to_server0:
+        range: [1, 40]
+        type: int
+        count: 3
+      drops_to_server1:
+        range: [1, 40]
+        type: int
+        count: 3
+    variants:
+      plugins:
+        - no_plugins
+        - multipath-rr
+        - multipath-rtt
+      filesize:
+        - 50_000
+        - 1_000_000
+        - 10_000_000
+        - 25_000_000
+    sim_timeout: 120
+    hard_timeout: 480
+  sigcomm19:
+    params:
+      delay:
+        range: [2.5, 50]
+        type: float
+        units: ms
+      bandwidth:
+        range: [5, 50]
+        type: float
+        units: Mbps
+      paths:
+        range: [2, 2]
+        type: int
+    variants:
+      plugins:
+        - no_plugins
+        - multipath-rr
+        - multipath-rtt
+      filesize:
+        - 1500
+        - 10_000
+        - 50_000
+        - 1_000_000
+        - 10_000_000
+    sim_timeout: 60
     hard_timeout: 480

@@ -180,11 +180,18 @@ for b, opts in tests['definitions'].items():
 
     results[b] = {'plugins': {}}
 
-    for p in opts['variants']['plugins']:
-        plugin_path = p or ''
+    for p_id in opts['variants']['plugins']:
+        plugin_paths = ','.join(tests['plugins'][p_id]['plugins']).strip()
+        for f in opts['variants'].get('filesize', [None]):
+            if f and not 'filesize' in params:
+                params['filesize'] = {'range': [f, f], 'type': type(f)}
 
-        with multiprocessing.Pool(processes=os.environ.get('NPROC')) as pool:
-            results[b]['plugins'][p] = pool.starmap(run_binary, [(tests, b, params, v, opts['sim_timeout'], opts['hard_timeout'], {'PQUIC_PLUGINS': plugin_path}) for v in ParamsGenerator(params, wsp_matrix).generate_all_values()])
+            with multiprocessing.Pool(processes=os.environ.get('NPROC')) as pool:
+                r = results[b]['plugins'].get(p_id, [])
+                r.extend(pool.starmap(run_binary, [(tests, b, params, v, opts['sim_timeout'], opts['hard_timeout'], {'PQUIC_PLUGINS': plugin_paths}) for v in ParamsGenerator(params, wsp_matrix).generate_all_values()]))
+                results[b]['plugins'][p_id] = r
+
+            del params['filesize']
 
 with open(os.path.join(test_args.results), 'w') as f:
     json.dump(results, f)

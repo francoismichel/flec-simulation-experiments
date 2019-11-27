@@ -23,4 +23,6 @@ class DroplistErrorModel : public ErrorModel {
     void DoReset(void);
 };
 
+void SetDrops(Ptr<DroplistErrorModel> drop_model, std::string drops_in);
+
 #endif /* DROPLIST_ERROR_MODEL_H */

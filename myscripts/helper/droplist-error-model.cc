@@ -27,3 +27,15 @@ bool DroplistErrorModel::DoCorrupt(Ptr<Packet> p) {
 void DroplistErrorModel::SetDrop(int packet_num) {
     drops.insert(packet_num);
 }
+
+
+void SetDrops(Ptr<DroplistErrorModel> drop_model, string drops_in) {
+    char *cstr = new char[drops_in.length()+1];
+    strcpy(cstr, drops_in.c_str());
+    char *p = strtok(cstr,",");
+    while (p) {
+        drop_model->SetDrop(stoi(p));
+        p = strtok(NULL,",");
+    }
+    delete[] cstr;
+}

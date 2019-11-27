@@ -4,23 +4,12 @@
 #include "ns3/point-to-point-module.h"
 #include "../helper/quic-network-simulator-helper.h"
 #include "../helper/quic-point-to-point-helper.h"
-#include "droplist-error-model.h"
+#include "../helper/droplist-error-model.h"
 
 using namespace ns3;
 using namespace std;
 
 NS_LOG_COMPONENT_DEFINE("ns3 simulator");
-
-void SetDrops(Ptr<DroplistErrorModel> drop_model, string drops_in) {
-    char *cstr = new char[drops_in.length()+1];
-    strcpy(cstr, drops_in.c_str());
-    char *p = strtok(cstr,",");
-    while (p) {
-        drop_model->SetDrop(stoi(p));
-        p = strtok(NULL,",");
-    }
-    delete[] cstr;
-}
 
 int main(int argc, char *argv[]) {
     std::string delay, bandwidth, queue, client_drops_in, server_drops_in, filesize;
