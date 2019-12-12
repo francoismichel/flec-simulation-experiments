@@ -25,7 +25,7 @@ def printi(v, *args, **kwargs):
 
 
 def gdb(plugins, binary_path, args):
-    return "/pquic-ns3-dce/prepare_pquic.sh && cd $NS3_PATH && NS_LOG= PQUIC_DEBUG=1 PQUIC_PLUGINS=%s gdb -ex 'handle SIGUSR1 nostop noprint' --args build/myscripts/%s %s" % (','.join(plugins), binary_path, ' '.join(args.split(' ')[1:]))
+    return "/pquic-ns3-dce/prepare_pquic.sh && cd $NS3_PATH && ./waf && NS_LOG= PQUIC_DEBUG=1 PQUIC_PLUGINS=%s gdb -ex 'handle SIGUSR1 nostop noprint' --args build/myscripts/%s %s" % (','.join(plugins), binary_path, ' '.join(args.split(' ')[1:]))
 
 
 parser = argparse.ArgumentParser(description='Extracts and presents results from a result file')
@@ -64,8 +64,7 @@ for test, variants in results.items():
             for r in variant_results:
                 tests_run += 1
                 earliest = min(r['start'], earliest)
-                latest = max(r['end'], latest)
-                status = 'passed'
+                latest = max(r['end'], latest); status = 'passed'
                 if 'Timeout reached' in r['failures']:
                     status = 'timedout'
                 elif r['failures']:

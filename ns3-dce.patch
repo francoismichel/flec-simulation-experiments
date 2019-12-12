@@ -1,3 +1,49 @@
+diff --git a/model/dce-fd.cc b/model/dce-fd.cc
+index 708ef69..65194f9 100644
+--- a/model/dce-fd.cc
++++ b/model/dce-fd.cc
+@@ -853,3 +853,41 @@ int dce_fsync (int fd)
+   NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd);
+   OPENED_FD_METHOD (int, Fsync ())
+ }
++int dce_dprintf(int fd, const char *f, ...)
++{
++  Thread *current = Current ();
++  NS_LOG_FUNCTION (current << UtilsGetNodeId () << fd << f);
++  NS_ASSERT (current != 0);
++
++  char *s = NULL;
++  va_list vl;
++  va_start (vl, f);
++  int r = vasprintf(&s, f, vl);
++  va_end (vl);
++
++  if (r != -1) {
++      std::map < int,FileUsage * > ::iterator it = current->process->openFiles.find (fd);
++      if (current->process->openFiles.end () == it) 
++      {
++        current->err = EBADF;
++        return -1;
++      } 
++      FileUsage *fu = it->second;
++      if (fu->IsClosed ())
++      {
++        current->err = EBADF;
++        return -1;
++      }
++      UnixFd *unixFd =  fu->GetFileInc ();
++      int r = unixFd->Write(s, strlen(s));
++      if (fu && fu->DecUsage ())
++      {
++        current->process->openFiles.erase (fd);
++        delete fu;
++        fu = 0;
++      }
++      free(s);
++  }
++
++  return r;
++}
 diff --git a/model/dce-poll.cc b/model/dce-poll.cc
 index 0cac665..e130fed 100644
 --- a/model/dce-poll.cc
@@ -28,6 +74,46 @@ index 0cac665..e130fed 100644
        pollTo = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
      }
  
+diff --git a/model/dce-stdlib.cc b/model/dce-stdlib.cc
+index 162c512..8a0b4ff 100644
+--- a/model/dce-stdlib.cc
++++ b/model/dce-stdlib.cc
+@@ -108,7 +108,6 @@ int dce_mkstemp (char *temp)
+   if (realFd == -1)
+     {
+       current->err = errno;
+-      delete c_fullpath;
+       return -1;
+     }
+ 
+@@ -116,7 +115,6 @@ int dce_mkstemp (char *temp)
+   if (fd == -1)
+     {
+       current->err = EMFILE;
+-      delete c_fullpath;
+       return -1;
+     }
+   UnixFd *unixFd = 0;
+@@ -125,7 +123,6 @@ int dce_mkstemp (char *temp)
+   current->process->openFiles[fd] = new FileUsage (fd, unixFd);
+ 
+   strncpy (temp, &c_fullpath[strlen(c_fullpath)-strlen(temp)], strlen(temp));
+-  delete c_fullpath;
+   return fd;
+ }
+ 
+diff --git a/model/dce-stdlib.h b/model/dce-stdlib.h
+index ab30172..401b228 100644
+--- a/model/dce-stdlib.h
++++ b/model/dce-stdlib.h
+@@ -26,6 +26,7 @@ int dce_clearenv (void);
+ int dce_mkstemp (char *temp);
+ FILE * dce_tmpfile(void);
+ int dce_rename (const char *oldpath, const char *newpath);
++int dce_dprintf(int fd, const char *format, ...);
+ 
+ #ifdef __cplusplus
+ }
 diff --git a/model/libc-dce.cc b/model/libc-dce.cc
 index f130ec5..492e46e 100644
 --- a/model/libc-dce.cc
@@ -42,7 +128,7 @@ index f130ec5..492e46e 100644
  // from glibc's string.h
  extern char * __strcpy_chk (char *__restrict __dest,
 diff --git a/model/libc-ns3.h b/model/libc-ns3.h
-index 3294921..3d32422 100644
+index 3294921..17ce584 100644
 --- a/model/libc-ns3.h
 +++ b/model/libc-ns3.h
 @@ -49,9 +49,9 @@
@@ -84,6 +170,15 @@ index 3294921..3d32422 100644
  // LOCALE.H
  DCE    (setlocale)
  NATIVE_WITH_ALIAS (newlocale)
+@@ -334,7 +333,7 @@ NATIVE (fprintf)
+ NATIVE (sprintf)
+ DCE (asprintf)
+ DCE (vasprintf)
+-NATIVE (dprintf)
++DCE (dprintf)
+ NATIVE (vdprintf)
+ DCE_WITH_ALIAS2 (fgetc,fgetc_unlocked)
+ NATIVE (getc)
 diff --git a/model/libc.h b/model/libc.h
 index 264a5c4..f192bb7 100644
 --- a/model/libc.h

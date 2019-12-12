@@ -8,7 +8,7 @@ import cgitb
 import uuid
 
 print()
-print()
+print(flush=True)
 cgitb.enable(logdir="/tmp")
 
 script_dir = os.path.dirname(os.path.abspath(__file__))

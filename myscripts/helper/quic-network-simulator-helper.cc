@@ -58,15 +58,14 @@ QuicNetworkSimulatorHelper::QuicNetworkSimulatorHelper(std::string filesize) {
   ApplicationContainer apps;
   dce.SetStackSize(1 << 20);
 
-  bool debug = false;
-  if (std::getenv("PQUIC_DEBUG") && strlen(std::getenv("PQUIC_DEBUG"))) {
-      debug = true;
-  }
+  bool debug = std::getenv("PQUIC_DEBUG") && strlen(std::getenv("PQUIC_DEBUG"));
 
   std::vector<std::string> plugins;
   if (std::getenv("PQUIC_PLUGINS") && strlen(std::getenv("PQUIC_PLUGINS"))) {
       plugins = split(std::getenv("PQUIC_PLUGINS"), ",");
   }
+
+  bool qlog = std::getenv("PQUIC_QLOG") && strlen(std::getenv("PQUIC_QLOG"));
 
   dce.SetBinary("picoquicdemo");
   dce.ResetArguments();
@@ -74,6 +73,10 @@ QuicNetworkSimulatorHelper::QuicNetworkSimulatorHelper(std::string filesize) {
   if (!debug) {
       dce.AddArgument("-l");
       dce.AddArgument("/dev/null");
+  }
+  if (qlog) {
+      dce.AddArgument("-q");
+      dce.AddArgument("server.qlog.json");
   }
   for (size_t i = 0; i < plugins.size(); i++) {
       dce.AddArgument("-P");
@@ -89,6 +92,10 @@ QuicNetworkSimulatorHelper::QuicNetworkSimulatorHelper(std::string filesize) {
   if (!debug) {
       dce.AddArgument("-l");
       dce.AddArgument("/dev/null");
+  }
+  if (qlog) {
+      dce.AddArgument("-q");
+      dce.AddArgument("client.qlog.json");
   }
   for (size_t i = 0; i < plugins.size(); i++) {
       dce.AddArgument("-P");
