@@ -65,7 +65,7 @@ def build_pquic():
 
 
 def compute_queue(bandwidth, delay):
-    return 1.5 * bandwidth * 1024 * 1024 * (2 * delay / 1000) // 1200
+    return 1.5 * (bandwidth / 8) * 1024 * 1024 * (2 * delay / 1000) // 1200
 
 
 def read_all(filename, mode='r'):
