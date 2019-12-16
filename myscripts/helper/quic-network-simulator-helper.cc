@@ -76,7 +76,7 @@ QuicNetworkSimulatorHelper::QuicNetworkSimulatorHelper(std::string filesize) {
   }
   if (qlog) {
       dce.AddArgument("-q");
-      dce.AddArgument("server.qlog.json");
+      dce.AddArgument("server.qlog");
   }
   for (size_t i = 0; i < plugins.size(); i++) {
       dce.AddArgument("-P");
@@ -95,7 +95,7 @@ QuicNetworkSimulatorHelper::QuicNetworkSimulatorHelper(std::string filesize) {
   }
   if (qlog) {
       dce.AddArgument("-q");
-      dce.AddArgument("client.qlog.json");
+      dce.AddArgument("client.qlog");
   }
   for (size_t i = 0; i < plugins.size(); i++) {
       dce.AddArgument("-P");
