@@ -66,7 +66,7 @@ results = json.load(args.file)
 documents = []
 
 groups.discard(args.split_by)
-params_id = {'bandwidth', 'delay', 'paths', 'queue', 'bandwidth_balance', 'delay_balance'} | set(groups)
+params_id = {'bandwidth', 'delay', 'paths', 'queue', 'bandwidth_balance', 'delay_balance', 'drops_to_client', 'drops_to_server'} | set(groups)
 unused_fields = {'cmdline', 'start', 'end'}
 mandatory_fields = {'transfer_time'}
 
@@ -133,18 +133,18 @@ for params, runs in transfer_times.items():
 
     if 'ref' in args and ref_time is None:
         print("Unable to get ref_time for ref:", args.ref)
-        exit(0)
         continue
 
     for r in runs:
         group = str(r[args.group_by])
         split = str(r[args.split_by])
         if ('ref' not in args or split != args.ref) and split != args.exclude_split and group != args.exclude_group:
-            if ref_time:
-                ratio = r['transfer_time'] / ref_time
-                deep_set(ratios, split, group, ratio)
-            goodput = ((r['filesize'][0] * 8) / 1000000) / (r['transfer_time'] / 1000)
-            deep_set(goodputs, split, group, goodput)
+            if r['transfer_time']:
+                if ref_time:
+                    ratio = r['transfer_time'] / ref_time
+                    deep_set(ratios, split, group, ratio)
+                goodput = ((r['filesize'][0] * 8) / 1000000) / (r['transfer_time'] / 1000)
+                deep_set(goodputs, split, group, goodput)
 
 if args.plot_type == 'dct_ratio_boxplot':
     new_fig()
