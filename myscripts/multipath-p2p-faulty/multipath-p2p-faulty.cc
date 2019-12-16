@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < 2; i++) {
         double b = (sum_bandwidth * fabs(i - b_bal_val));
         double d = 2 * avg_delay * fabs(i - d_bal_val);
-        int q = 1.5 * b * 1024 * 1024 * (2 * d / 1000) / 1200;
+        int q = 1.5 * (b / 8) * 1024 * 1024 * (2 * d / 1000) / 1200;
 
         std::stringstream fmt_b;
         fmt_b << b << "Mbps";
