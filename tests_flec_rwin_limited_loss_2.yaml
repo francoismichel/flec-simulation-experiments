@@ -1,0 +1,149 @@
+binaries:
+  rwin-limited-download: 'rwin-limited-download/bin/rwin-limited-download'
+
+plugins:
+  no_plugins:
+    name: PQUIC Core
+    plugins: []
+  monitoring:
+    name: Monitoring
+    plugins:
+      - plugins/monitoring/monitoring.plugin
+  datagram:
+    name: DATAGRAM
+    plugins:
+      - plugins/datagram/datagram.plugin
+    additional_params:
+      use_fec_api: "0"
+  simple_fec_causal:
+    name: SIMPLE_FEC_CAUSAL
+    plugins:
+      - plugins/simple_fec/fec_buffer_limited.plugin
+      - plugins/loss_monitor/loss_monitor.plugin
+      - plugins/no_pacing/no_pacing.plugin
+    additional_params:
+      use_fec_api: "1"
+  simple_fec_causal_westwood:
+    name: SIMPLE_FEC_CAUSAL_WESTWOOD
+    plugins:
+      - plugins/simple_fec/fec_buffer_limited.plugin
+      - plugins/loss_monitor/loss_monitor.plugin
+      - plugins/westwood/westwood_congestion_control.plugin
+      - plugins/no_pacing/no_pacing.plugin
+    additional_params:
+      use_fec_api: "1"
+  simple_fec_causal_bbr:
+    name: SIMPLE_FEC_CAUSAL_BBR
+    plugins:
+      - plugins/simple_fec/fec_buffer_limited.plugin
+      - plugins/loss_monitor/loss_monitor.plugin
+      - plugins/no_pacing/pacing_with_event.plugin
+    additional_params:
+      use_fec_api: "1"
+      set_cc_algo: "bbr"
+  simple_fec_causal_bbr_80211n_2dot4GHz:
+    name: SIMPLE_FEC_CAUSAL_BBR_80211N_2DOT4GHz
+    plugins:
+      - plugins/simple_fec/fec_buffer_limited.plugin
+      - plugins/loss_monitor/loss_monitor.plugin
+      - plugins/no_pacing/pacing_with_event.plugin
+    additional_params:
+      use_fec_api: "1"
+      set_cc_algo: "bbr"
+      wifi_standard: "802.11n-2.4GHz"
+  simple_fec_causal_bbr_80211n_5GHz:
+    name: SIMPLE_FEC_CAUSAL_BBR_80211N_5GHz
+    plugins:
+      - plugins/simple_fec/fec_buffer_limited.plugin
+      - plugins/loss_monitor/loss_monitor.plugin
+      - plugins/no_pacing/pacing_with_event.plugin
+    additional_params:
+      use_fec_api: "1"
+      set_cc_algo: "bbr"
+      wifi_standard: "802.11n-5GHz"
+  bbr:
+    name: BBR
+    plugins: []
+    additional_params:
+      use_fec_api: "0"
+      set_cc_algo: "bbr"
+  cubic:
+    name: BBR
+    plugins: []
+    additional_params:
+      use_fec_api: "0"
+      set_cc_algo: "cubic"
+  bbr_80211n_2dot4GHz:
+    name: BBR_80211n_2DOT4GHZ
+    plugins: []
+    additional_params:
+      use_fec_api: "0"
+      wifi_standard: "802.11n-2.4GHz"
+      set_cc_algo: "bbr"
+  bbr_80211n_5GHz:
+    name: BBR_80211n_5GHZ
+    plugins: []
+    additional_params:
+      use_fec_api: "0"
+      wifi_standard: "802.11n-5GHz"
+      set_cc_algo: "bbr"
+  no_cc_80211n_2dot4GHz:
+    name: NO_CC_80211n_2DOT4GHZ
+    plugins:
+      - plugins/no_pacing/no_pacing.plugin
+      - plugins/disable_congestion_control/disable_congestion_control.plugin
+    additional_params:
+      use_fec_api: "0"
+      wifi_standard: "802.11n-2.4GHz"
+      set_fixed_cwin: "10000000"
+  no_cc_80211n_5GHz:
+    name: NO_CC_80211n_5GHZ
+    plugins:
+      - plugins/no_pacing/no_pacing.plugin
+      - plugins/disable_congestion_control/disable_congestion_control.plugin
+    additional_params:
+      use_fec_api: "0"
+      wifi_standard: "802.11n-5GHz"
+      set_fixed_cwin: "10000000"
+
+definitions:
+  rwin-limited-download:
+    params:
+      delay:
+        range: [200, 200]
+        type: float
+        units: ms
+      bandwidth:
+        range: [8, 8]
+        type: float
+        units: Mbps
+      loss_rate_to_client:
+        range: [2,2]
+        type: float
+      loss_rate_to_server:
+        range: [2,2]
+        type: float
+      seed:
+        range: [5, 10000]
+        type: int
+      wifi_distance_meters:
+        range: [1, 20]
+        type: int
+    variants:
+      stream_receive_window_size:
+        - 70000
+        - 150000
+        - 250000
+        - 400000
+        - 1000000
+        - 3000000
+
+      filesize:
+        - 5_000_000
+      plugins:
+        - simple_fec_causal_bbr
+        - simple_fec_ac_rlnc_bbr
+        - bbr
+
+    sim_timeout: 600
+    hard_timeout: 1200
