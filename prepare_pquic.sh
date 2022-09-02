@@ -29,6 +29,8 @@ rm -rf CMakeCache.txt CMakeFiles
 sed -i 's/#define PICOQUIC_FIRST_RESPONSE_MAX (1 << 25)/#define PICOQUIC_FIRST_RESPONSE_MAX (1 << 28)/g' picoquicfirst/picoquicdemo.c
 NS3=1 DISABLE_DEBUG_PRINTF=1 DISABLE_QLOG=1 cmake .
 make -j$(nproc) picoquicdemo
+make -j$(nproc) picoquicburst_messages
+make -j$(nproc) picoquicvideo
 cd plugins
 make -j$(nproc)
 cd $DIR
