@@ -50,6 +50,7 @@ RUN ./configure --disable-bsdtar --disable-bsdcpio --without-openssl && \
 WORKDIR /home/ns3dce
 RUN git clone https://github.com/p-quic/picotls.git
 WORKDIR picotls
+RUN git checkout 62c7d6c43d68bc411cd3edf41d537ccae9178999
 RUN git submodule init && \
     git submodule update
 RUN sed -i 's/${CMAKE_C_FLAGS}/${CMAKE_C_FLAGS} -fPIC/g' CMakeLists.txt

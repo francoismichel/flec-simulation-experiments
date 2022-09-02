@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 RUN apt-get update && apt-get install --no-install-recommends -y mercurial libexpat1-dev git-core build-essential bison \
     flex libssl-dev libdb-dev libpcap-dev libc6-dbg libsysfs-dev gawk indent \
     pkg-config autoconf automake sudo ccache libsaxonb-java openjdk-8-jre-headless \
-    bc wget && \
+    bc wget apt-transport-https ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 RUN useradd -ms /bin/bash ns3dce && adduser ns3dce sudo && echo -n 'ns3dce:ns3dce' | chpasswd
