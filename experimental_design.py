@@ -56,6 +56,7 @@ def load_wsp(filename, nrows, ncols):
 
     return matrix
 
+
 class ParamsGenerator(object):
     def __init__(self, params_values, matrix):
         self.index = 0
@@ -72,6 +73,10 @@ class ParamsGenerator(object):
             for key in list(params_values[n]["range"].keys()) if isinstance(params_values[n]["range"], dict) else [None]:
                 names.append((n, key))
         self.param_full_names = sorted(flatten([[self._full_name(name_key[0], i, name_key[1]) for i in range(params_values[name_key[0]].get("count", 1))] for name_key in names]))
+        # ensure same seeds even with bursts:
+        if "avg_burst_size_to_client" in self.param_full_names:
+            self.param_full_names.pop(self.param_full_names.index("avg_burst_size_to_client"))
+            self.param_full_names.append("avg_burst_size_to_client")
         # decide for an arbitrary ordering of the parameters
         self.params_indexes = {self.param_full_names[i]: i for i in range(len(self.param_full_names))}
         self.matrix = matrix
@@ -109,4 +114,11 @@ class ParamsGenerator(object):
 
     def generate_all_values(self):
         for i in range(len(self.matrix[0])):
+            yield self._generate_value_at(i)
+
+    def generate_values_until(self, n):
+        """
+        :param n: the number max of experiments to generate (None to generate all experiments)
+        """
+        for i in range(min(len(self.matrix[0]), n if n is not None else float('inf'))):
             yield self._generate_value_at(i)
