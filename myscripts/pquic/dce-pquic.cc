@@ -38,10 +38,10 @@ int main(int argc, char *argv[]) {
     uint32_t systemId = 0;
     uint32_t systemCount = 1;
 #ifdef DCE_MPI
-    // Distributed simulation setup
+    // simulation setup
     MpiInterface::Enable (&argc, &argv);
     GlobalValue::Bind ("SimulatorImplementationType",
-                       StringValue ("ns3::DistributedSimulatorImpl"));
+                       StringValue ("ns3::DefaultSimulatorImpl"));
     systemId = MpiInterface::GetSystemId ();
     systemCount = MpiInterface::GetSize ();
 #endif
