@@ -213,6 +213,6 @@ index 1455196..9a8a5a9 100644
              raise WafError("valgrind is not installed")
 -        argv = [env['VALGRIND'], "--leak-check=full", "--show-reachable=yes", "--error-exitcode=1"] + argv
 +        argv = [''.join(env['VALGRIND']), "--leak-check=full", "--show-reachable=yes", "--error-exitcode=1"] + argv
-         proc = subprocess.Popen(argv, env=proc_env, cwd=cwd, stderr=subprocess.PIPE)
+         proc = subprocess.Popen(argv, env=proc_env, cwd=cwd, universal_newlines=True, stderr=subprocess.PIPE)
          error = False
          for line in proc.stderr:
