@@ -32,7 +32,6 @@ RUN wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz && \
 WORKDIR openssl-1.1.1d
 RUN ./config && \
     make -j$(nproc) && \
-    make test && \
     sudo make install 
 ENV LD_LIBRARY_PATH /usr/local/lib
 
