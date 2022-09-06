@@ -25,6 +25,7 @@ if [[ -d picoquic/michelfralloc ]]; then
     make -j$(nproc)
 fi
 
+cd $DCE_PATH
 if [[ -d picoquic/gf256/flec-moepgf ]]; then
     cd picoquic/gf256/flec-moepgf
     autoreconf -fi
