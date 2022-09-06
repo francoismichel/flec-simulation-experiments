@@ -24,6 +24,14 @@ if [[ -d picoquic/michelfralloc ]]; then
     make clean
     make -j$(nproc)
 fi
+
+if [[ -d picoquic/gf256/flec-moepgf ]]; then
+    cd picoquic/gf256/flec-moepgf
+    autoreconf -fi
+    make
+    cp .libs/libmoepgf.a ../
+fi
+
 cd $DCE_PATH
 rm -rf CMakeCache.txt CMakeFiles
 sed -i 's/#define PICOQUIC_FIRST_RESPONSE_MAX (1 << 25)/#define PICOQUIC_FIRST_RESPONSE_MAX (1 << 28)/g' picoquicfirst/picoquicdemo.c
