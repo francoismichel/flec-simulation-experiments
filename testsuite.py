@@ -237,7 +237,7 @@ def run_binary(tests, binary, params, values, sim_timeout, hard_timeout, variant
 results = {}
 
 wsp_matrix = load_wsp(os.path.join(script_dir, 'wsp_20_col'), 20, 95)
-with open(os.path.join(script_dir, test_args.f)) as f:
+with open(os.path.join(script_dir, test_args.test_file)) as f:
     tests = yaml.load(f)
 
 build_ns3()
