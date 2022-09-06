@@ -7,7 +7,9 @@ COPY clang.list /etc/apt/sources.list.d/clang.list
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -y pkg-config cmake llvm-6.0 lld-6.0 clang-6.0 gdb strace python3 python3-yaml && \
+    apt-get install --no-install-recommends -y pkg-config cmake llvm-6.0 lld-6.0 \
+    clang-6.0 gdb strace python3 python3-yaml zlib1g zlib1g-dev automake autoconf \
+    autoconf-archive autotools-dev libtool && \
     rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-6.0 100 && \
