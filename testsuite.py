@@ -138,10 +138,11 @@ def run_binary(tests, binary, params, values, sim_timeout, hard_timeout, variant
 
         rand_key = "%x" % random.getrandbits(128)
 
-        for dir in ["pcaps", "keys", "logs"]:
-            path = "/pquic-ns3-dce/captures/{}/{}".format(rand_key, dir)
-            if not os.path.exists(path):
-                os.system("mkdir -p {}".format(path))
+        if any([os.environ.get('PQUIC_CAPTURE'), os.environ.get('PQUIC_DEBUG')]):
+            for dir in ["pcaps", "keys", "logs"]:
+                path = "/pquic-ns3-dce/captures/{}/{}".format(rand_key, dir)
+                if not os.path.exists(path):
+                    os.system("mkdir -p {}".format(path))
 
 
         if os.environ.get('PQUIC_CAPTURE'):
