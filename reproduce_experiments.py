@@ -28,7 +28,7 @@ for testsuite, tests in experiments.items():
 
 def run_test(test, testsuite):
     testsuite_command = "python3 testsuite.py -d -r {test}.json -t {testsuite} -f tests_flec_{test}.yaml".format(test=test, testsuite=testsuite)
-    command = "cd /pquic-ns3-dce/ && export LANG=C.UTF-8 && export LC_ALL=C.UTF-8 && {testsuite_command} && cp -f $NS3_PATH/{test}.json ./results/".format(testsuite_command=testsuite_command, test=test)
+    command = "cd /pquic-ns3-dce/ && export LANG=C.UTF-8 && export LC_ALL=C.UTF-8 && bash prepare_video.sh && {testsuite_command} && cp -f $NS3_PATH/{test}.json ./results/".format(testsuite_command=testsuite_command, test=test)
     process = subprocess.run(["bash", "run.sh", os.path.abspath(args.flec_dir), command], stdout=sys.stdout, stderr=sys.stderr)
 
 
