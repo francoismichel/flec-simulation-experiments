@@ -1,0 +1,90 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive TZ="Europe/London"
+
+RUN apt-get update && apt-get install --no-install-recommends -y mercurial libexpat1-dev git-core build-essential bison \
+    flex libssl-dev libdb-dev libpcap-dev libc6-dbg libsysfs-dev gawk indent \
+    pkg-config autoconf automake sudo ccache libsaxonb-java openjdk-8-jre-headless python-setuptools \
+    bc wget python3-pip software-properties-common apt-transport-https ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# install g++-8
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get update && \
+    apt-get install -y g++-8
+
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10 && \
+ update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 20 && \
+ update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10 && \
+ update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 20 && \
+ update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10 && \
+ update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 20 && \
+ rm /usr/bin/cpp && \
+ update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 10 && \
+ update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 20 && \
+ update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30 && \
+ update-alternatives --set cc /usr/bin/gcc && \
+ update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30 && \
+ update-alternatives --set c++ /usr/bin/g++
+
+RUN apt-get install -y libc6-i386
+RUN apt-get install -y libc-bin
+RUN apt-get install -y libc6-dbg libc6-dev
+RUN useradd -ms /bin/bash ns3dce && adduser ns3dce sudo && echo -n 'ns3dce:ns3dce' | chpasswd
+
+# Enable passwordless sudo for users under the "sudo" group
+RUN sed -i.bkp -e \
+      's/%sudo\s\+ALL=(ALL\(:ALL\)\?)\s\+ALL/%sudo ALL=NOPASSWD:ALL/g' \
+      /etc/sudoers
+
+RUN pip install --upgrade pip==9.0.3
+RUN pip install setuptools-scm==5.0.2
+RUN pip install distro
+
+USER ns3dce
+
+WORKDIR /home/ns3dce/
+
+
+
+RUN pip install --user distro
+RUN pip3 install --user distro requests
+
+ENV PATH /usr/lib/ccache:${PATH}
+
+# bake
+RUN mkdir -p /home/ns3dce/dce-linux-dev
+WORKDIR /home/ns3dce/dce-linux-dev
+COPY ns3-dce.patch .
+RUN git clone https://gitlab.com/ParthPratim1/bake
+
+WORKDIR /home/ns3dce/dce-linux-dev/bake
+RUN git checkout 3e3414dc775d23a1f9b18b35cd720d8e90db10fc
+
+RUN export PATH=`pwd`/build/bin${PATH:+:$PATH}
+RUN export PYTHONPATH=`pwd`/build/lib${PYTHONPATH:+:$PYTHONPATH}
+RUN export LD_LIBRARY_PATH=`pwd`/source/ns-3-dce/build/lib:`pwd`/source/ns-3-dev/build/lib:`pwd`/build/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+RUN sudo apt-get install gawk
+
+RUN export CPATH=$CPATH:/home/ns3dce/dce-linux-dev/source/ns-3-dev/include
+
+COPY bakeconf.xml.patch .
+RUN git apply --whitespace=warn < bakeconf.xml.patch
+WORKDIR /home/ns3dce/dce-linux-dev
+
+RUN ls
+
+RUN ./bake/bake.py configure -e dce-linux-dev && \
+    ./bake/bake.py  --debug download -vvv
+
+WORKDIR /home/ns3dce/dce-linux-dev/source/ns-3-dev
+COPY ns3.patch .
+RUN git apply < ns3.patch
+
+WORKDIR /home/ns3dce/dce-linux-dev
+#RUN ./bake/bake.py build -j $(nproc)
+
+
+RUN ./bake/bake.py download && \
+       ./bake/bake.py build -vvv -j $(nproc)
+
+# RUN cd source/ns-3-dce && ./test.py -v -c unit
