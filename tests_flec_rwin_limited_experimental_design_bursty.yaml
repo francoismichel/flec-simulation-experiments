@@ -177,7 +177,7 @@ definitions:
       filesize:
         - 5_000_000
       plugins:
-        - simple_fec_bulk_bbr
+        - simple_fec_causal_bbr
         - simple_fec_ac_rlnc_bbr
         - bbr
 
