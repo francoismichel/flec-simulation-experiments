@@ -1,5 +1,5 @@
 diff --git a/bakeconf.xml b/bakeconf.xml
-index 2dc19f5..c213b04 100644
+index 2dc19f5..1712af4 100644
 --- a/bakeconf.xml
 +++ b/bakeconf.xml
 @@ -5,7 +5,7 @@
@@ -256,7 +256,7 @@ index 2dc19f5..c213b04 100644
 -        <attribute name="configure_arguments" value="-DCMAKE_BUILD_TYPE=debug -DNS3_NATIVE_OPTIMIZATIONS=OFF -DNS3_EXAMPLES=ON -DNS3_TESTS=ON"/>
 +      <depends_on name="pyviz-prerequisites" optional="True"/>
 +      <build type="waf" objdir="yes">
-+        <attribute name="configure_arguments" value="configure --prefix=$INSTALLDIR --enable-tests"/>
++        <attribute name="configure_arguments" value="-d optimized configure --prefix=$INSTALLDIR --enable-tests"/>
        </build>
 -  </module>
 +    </module>
