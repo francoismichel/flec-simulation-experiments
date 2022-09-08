@@ -149,17 +149,17 @@ definitions:
         type: float
         units: Mbps
       loss_rate_to_client:
-       range: [0.1,1.5]
+        range: [0.1,1.5]
         type: float
       loss_rate_to_server:
-       range: [0.1,1.5]
+        range: [0.1,1.5]
         type: float
      avg_burst_size_to_client:
-       range: [1, 5]
-       type: int
+        range: [1, 5]
+        type: int
      avg_burst_size_to_server:
-       range: [1, 5]
-       type: int
+        range: [1, 5]
+        type: int
       seed:
         range: [5, 10000]
         type: int

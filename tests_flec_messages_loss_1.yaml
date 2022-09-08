@@ -216,17 +216,17 @@ plugins:
         type: float
         units: ms
       bandwidth:
-       range: [8, 8]
+        range: [8, 8]
         type: float
         units: Mbps
       filesize:
         range: [5_000_000, 5_000_000]
         type: int
       loss_rate_to_client:
-       range: [1,1]
+        range: [1,1]
         type: float
       loss_rate_to_server:
-       range: [1,1]
+        range: [1,1]
         type: float
       videofile:
         # TODO: real use of this range (with string values)
