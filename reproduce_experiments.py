@@ -34,7 +34,7 @@ for testsuite, tests in experiments.items():
 
 def run_test(test, testsuite, verbose):
     testsuite_command = "python3 testsuite.py -d -r {test}.json -t {testsuite} -f tests_flec_{test}.yaml -m {additional_metrics}".format(test=test, testsuite=testsuite, additional_metrics=additional_metrics[testsuite])
-    command = "cd /pquic-ns3-dce/ && export LANG=C.UTF-8 && export LC_ALL=C.UTF-8 && bash prepare_video.sh && {testsuite_command} && cp -f $NS3_PATH/{test}.json ./results/".format(testsuite_command=testsuite_command, test=test)
+    command = "cd /pquic-ns3-dce/ && export LANG=C.UTF-8 && export LC_ALL=C.UTF-8 && export PQUIC_VIDEO=1 && export PYTHONIOENCODING=utf-8 && bash prepare_video.sh && {testsuite_command} && cp -f $NS3_PATH/{test}.json ./results/".format(testsuite_command=testsuite_command, test=test)
     stdout, stderr = (sys.stdout, sys.stderr) if verbose else (subprocess.DEVNULL, subprocess.DEVNULL)
     return subprocess.run(["bash", "run.sh", os.path.abspath(args.flec_dir), command], stdout=stdout, stderr=stderr).returncode
 
