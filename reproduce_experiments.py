@@ -46,7 +46,7 @@ print()
 print()
 
 if args.only:
-    run_test(args.only, test_to_testsuite[args.only])
+    run_test(args.only, test_to_testsuite[args.only], args.verbose)
 else:
     i = 0
     for testsuite, tests in experiments.items():
