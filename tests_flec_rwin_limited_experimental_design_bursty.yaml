@@ -154,10 +154,10 @@ definitions:
       loss_rate_to_server:
         range: [0.1,1.5]
         type: float
-     avg_burst_size_to_client:
+      avg_burst_size_to_client:
         range: [1, 5]
         type: int
-     avg_burst_size_to_server:
+      avg_burst_size_to_server:
         range: [1, 5]
         type: int
       seed:
