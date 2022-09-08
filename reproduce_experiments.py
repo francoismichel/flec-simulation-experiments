@@ -14,7 +14,7 @@ args = parser.parse_args()
 
 additional_metrics = {
     "rwin-limited-download": "additional_metrics_bytes_sent",
-    "video-with-losses": "additional_metrics_bytes_sent,additional_metrics_message_based",
+    "video-with-losses": "additional_metrics_message_based",
 }
 
 experiments = {
