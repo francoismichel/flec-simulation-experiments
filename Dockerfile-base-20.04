@@ -63,7 +63,7 @@ RUN git checkout 3e3414dc775d23a1f9b18b35cd720d8e90db10fc
 RUN export PATH=`pwd`/build/bin${PATH:+:$PATH}
 RUN export PYTHONPATH=`pwd`/build/lib${PYTHONPATH:+:$PYTHONPATH}
 RUN export LD_LIBRARY_PATH=`pwd`/source/ns-3-dce/build/lib:`pwd`/source/ns-3-dev/build/lib:`pwd`/build/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
-RUN sudo apt-get install gawk
+RUN sudo apt-get install gawk rsync
 
 RUN export CPATH=$CPATH:/home/ns3dce/dce-linux-dev/source/ns-3-dev/include
 
