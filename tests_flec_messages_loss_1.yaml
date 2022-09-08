@@ -208,6 +208,7 @@ plugins:
       wifi_standard: "802.11n-5GHz"
       set_fixed_cwin: "10000000"
 
+definitions:
   video-with-losses:
     params:
       delay:
