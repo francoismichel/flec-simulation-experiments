@@ -63,7 +63,7 @@ def run(*args, stdout=True, stderr=True, shell=True, env=None, timeout=None):
 
 def build_ns3():
     os.chdir(ns3_dir)
-    if run('./waf', stderr=test_args.debug) is not 0:
+    if run('./waf -j1', stderr=test_args.debug) is not 0:
         print('Building ns-3 failed', file=sys.stderr)
         exit(0)
     os.chdir(script_dir)
@@ -298,42 +298,6 @@ for b, opts in tests['definitions'].items():
         plugin_paths = ','.join(tests['plugins'][p_id]['plugins']).strip()
         recurse(variants, plugin_paths)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #
-    # for p_id in opts['variants']['plugins']:
-    #     plugin_paths = ','.join(tests['plugins'][p_id]['plugins']).strip()
-    #     for f in opts['variants'].get('filesize', [None]):
-    #         if f and not 'filesize' in params:
-    #             params['filesize'] = {'range': [f, f], 'type': type(f)}
-    #         for lr in opts['variants'].get('loss_rate_to_client', [None]):
-    #             if lr and not 'loss_rate_to_client' in params:
-    #                 params['loss_rate_to_client'] = {'range': [lr, lr], 'type': type(lr)}
-    #             for rwin in opts['variants'].get('stream_receive_window_size', [None]):
-    #                 if rwin and not 'stream_receive_window_size' in params:
-    #                     params['stream_receive_window_size'] = {'range': [rwin, rwin], 'type': type(rwin)}
-    #                 with multiprocessing.Pool(processes=os.environ.get('NPROC')) as pool:
-    #                     r = results[b]['plugins'].get(p_id, [])
-    #                     r.extend(pool.starmap(run_binary, [(tests, b, params, v, opts['sim_timeout'], opts['hard_timeout'], tests['plugins'][p_id].get("additional_params", {}), {'PQUIC_PLUGINS': plugin_paths}) for v in ParamsGenerator(params, wsp_matrix).generate_all_values()]))
-    #                     results[b]['plugins'][p_id] = r
-    #                 if rwin:
-    #                     del params['stream_receive_window_size']
-    #             if lr:
-    #                 del params['loss_rate_to_client']
-    #
-    #         if f:
-    #             del params['filesize']
 
 with open(os.path.join(test_args.results), 'w') as f:
     json.dump(results, f)
