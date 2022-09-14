@@ -1,7 +1,6 @@
-# flec-simulation-experiments
+# FlEC simulation experiments
 
-  docker build -t pquic-ns3-dce-base -f Dockerfile-base .
-  docker build -t pquic-ns3-dce .
-  pushd .. && git clone --recurse-submodules https://github.com/francoismichel/flec && popd
-  sh run.sh $(pwd)/../flec
-  
+This repository contains the environment to run FlEC inside NS3-DCE and reproduce its results.
+We (painfully) ported NS3-DCE to Ubuntu 20.04.
+If you just want to have an NS3-DCE docker image without intention to run FlEC, you can just build
+the Dockerfile-base-20.04 image.
