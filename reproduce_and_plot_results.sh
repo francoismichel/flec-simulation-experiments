@@ -8,6 +8,7 @@ fi
 
 docker build -t pquic-ns3-dce-base-20.04 -f Dockerfile-base-20.04 .
 docker build -t pquic-ns3-dce -f Dockerfile-20.04 .
+docker build -t flec-matplotlib -f Dockerfile-matplotlib .
 
 python3 reproduce_experiments.py $1
 
